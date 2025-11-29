@@ -177,10 +177,85 @@
       overflow: hidden;
     }
 
+    .window-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
     .window-content iframe {
       width: 100%;
       height: 100%;
       border: none;
+    }
+
+    .window-resize-handle {
+      position: absolute;
+      background: transparent;
+    }
+
+    .resize-handle-e {
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: e-resize;
+    }
+
+    .resize-handle-s {
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      cursor: s-resize;
+    }
+
+    .resize-handle-se {
+      right: 0;
+      bottom: 0;
+      width: 10px;
+      height: 10px;
+      cursor: se-resize;
+    }
+
+    .resize-handle-n {
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      cursor: n-resize;
+    }
+
+    .resize-handle-w {
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      cursor: w-resize;
+    }
+
+    .resize-handle-nw {
+      left: 0;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      cursor: nw-resize;
+    }
+
+    .resize-handle-ne {
+      right: 0;
+      top: 0;
+      width: 10px;
+      height: 10px;
+      cursor: ne-resize;
+    }
+
+    .resize-handle-sw {
+      left: 0;
+      bottom: 0;
+      width: 10px;
+      height: 10px;
+      cursor: sw-resize;
     }
 
     .desktop-overlay {
@@ -190,6 +265,324 @@
       right: 0;
       bottom: 50px;
       pointer-events: none;
+    }
+
+    .snap-preview {
+      position: fixed;
+      background: rgba(100, 181, 246, 0.3);
+      border: 2px solid rgba(100, 181, 246, 0.8);
+      pointer-events: none;
+      z-index: 9998;
+      display: none;
+      transition: all 0.1s;
+    }
+
+    .context-menu {
+      position: fixed;
+      background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      display: none;
+      min-width: 180px;
+    }
+
+    .context-menu-item {
+      padding: 10px 16px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .context-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .context-menu-item:hover {
+      background: rgba(100, 181, 246, 0.2);
+    }
+
+    .settings-panel {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      z-index: 10001;
+      display: none;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #e0e0e0;
+    }
+
+    .settings-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-header h2 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .settings-close {
+      background: rgba(244, 67, 54, 0.8);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      color: white;
+      font-size: 16px;
+    }
+
+    .settings-body {
+      padding: 20px;
+    }
+
+    .settings-group {
+      margin-bottom: 24px;
+    }
+
+    .settings-group h3 {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: #64b5f6;
+    }
+
+    .settings-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+
+    .settings-option label {
+      font-size: 13px;
+    }
+
+    .settings-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .theme-option {
+      padding: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .theme-option:hover {
+      transform: scale(1.05);
+    }
+
+    .theme-option.active {
+      border-color: #64b5f6;
+    }
+
+    .help-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10002;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .help-panel {
+      background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: #e0e0e0;
+    }
+
+    .help-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .help-header h2 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    .help-body {
+      padding: 20px;
+    }
+
+    .help-section {
+      margin-bottom: 24px;
+    }
+
+    .help-section h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #64b5f6;
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    .shortcut-key {
+      background: rgba(100, 181, 246, 0.2);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .notification-container {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 10003;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 350px;
+    }
+
+    .notification {
+      background: rgba(30, 30, 30, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      padding: 16px;
+      color: #e0e0e0;
+      animation: slideIn 0.3s ease;
+      display: flex;
+      gap: 12px;
+      align-items: start;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .notification-icon {
+      font-size: 20px;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .notification-message {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .notification-close {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0.7;
+    }
+
+    .notification-close:hover {
+      opacity: 1;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10005;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #4ade80;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      position: absolute;
+      margin-top: 100px;
+      color: #fff;
+      font-size: 14px;
+      opacity: 0.9;
     }
   </style>
 </head>
@@ -209,6 +602,126 @@
   <div class="taskbar">
     <button class="taskbar-btn" onclick="toggleWelcome()">🏠 Home</button>
     <div id="taskbarApps"></div>
+    <button class="taskbar-btn" onclick="openSettings()" style="margin-left: auto;">⚙️ Settings</button>
+    <button class="taskbar-btn" onclick="toggleHelp()">❓ Help</button>
+  </div>
+
+  <div class="snap-preview" id="snapPreview"></div>
+
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="contextMenuAction('minimize')">
+      <span>➖</span> Minimize
+    </div>
+    <div class="context-menu-item" onclick="contextMenuAction('maximize')">
+      <span>⬜</span> Maximize
+    </div>
+    <div class="context-menu-item" onclick="contextMenuAction('alwaysOnTop')">
+      <span>📌</span> Always on Top
+    </div>
+    <div class="context-menu-item" onclick="contextMenuAction('close')">
+      <span>❌</span> Close
+    </div>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h2>⚙️ Settings</h2>
+      <button class="settings-close" onclick="closeSettings()">×</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-group">
+        <h3>Theme</h3>
+        <div class="theme-grid" id="themeGrid"></div>
+      </div>
+      <div class="settings-group">
+        <h3>Window Behavior</h3>
+        <div class="settings-option">
+          <label>Enable Window Snapping</label>
+          <input type="checkbox" id="enableSnapping" checked onchange="saveSettings()">
+        </div>
+        <div class="settings-option">
+          <label>Save Window Positions</label>
+          <input type="checkbox" id="savePositions" checked onchange="saveSettings()">
+        </div>
+        <div class="settings-option">
+          <label>Animate Windows</label>
+          <input type="checkbox" id="animateWindows" checked onchange="saveSettings()">
+        </div>
+      </div>
+      <div class="settings-group">
+        <h3>Desktop</h3>
+        <div class="settings-option">
+          <label>Show Welcome Screen on Start</label>
+          <input type="checkbox" id="showWelcome" checked onchange="saveSettings()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="help-overlay" id="helpOverlay" onclick="if(event.target === this) toggleHelp()">
+    <div class="help-panel">
+      <div class="help-header">
+        <h2>❓ Keyboard Shortcuts & Help</h2>
+        <button class="settings-close" onclick="toggleHelp()">×</button>
+      </div>
+      <div class="help-body">
+        <div class="help-section">
+          <h3>Window Management</h3>
+          <div class="shortcut-row">
+            <span>Cycle through windows</span>
+            <span class="shortcut-key">Alt + Tab</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Close active window</span>
+            <span class="shortcut-key">Ctrl + W</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Snap window left</span>
+            <span class="shortcut-key">Win + ←</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Snap window right</span>
+            <span class="shortcut-key">Win + →</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Maximize window</span>
+            <span class="shortcut-key">Win + ↑</span>
+          </div>
+        </div>
+        <div class="help-section">
+          <h3>Desktop</h3>
+          <div class="shortcut-row">
+            <span>Open home screen</span>
+            <span class="shortcut-key">Escape</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Open help</span>
+            <span class="shortcut-key">F1</span>
+          </div>
+          <div class="shortcut-row">
+            <span>Open settings</span>
+            <span class="shortcut-key">Ctrl + ,</span>
+          </div>
+        </div>
+        <div class="help-section">
+          <h3>Window Snapping</h3>
+          <p style="font-size: 13px; opacity: 0.9; line-height: 1.6;">
+            Drag windows to screen edges to snap them into place:<br>
+            • <strong>Left edge:</strong> Snap to left half<br>
+            • <strong>Right edge:</strong> Snap to right half<br>
+            • <strong>Top edge:</strong> Maximize window<br>
+            • <strong>Corners:</strong> Snap to quarter screen
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notification-container" id="notificationContainer"></div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" id="loadingText">Loading...</div>
   </div>
 
   <script>
@@ -216,9 +729,283 @@
     let windows = {};
     let activeWindow = null;
     let dragState = null;
+    let resizeState = null;
     let zIndexCounter = 100;
+    let contextMenuTarget = null;
+    let snapZone = null;
+    let settings = {
+      theme: 'default',
+      enableSnapping: true,
+      savePositions: true,
+      animateWindows: true,
+      showWelcome: true
+    };
+
+    const themes = [
+      { name: 'default', label: 'Purple Gradient', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+      { name: 'ocean', label: 'Ocean Blue', gradient: 'linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%)' },
+      { name: 'sunset', label: 'Sunset Orange', gradient: 'linear-gradient(135deg, #FF512F 0%, #F09819 100%)' },
+      { name: 'forest', label: 'Forest Green', gradient: 'linear-gradient(135deg, #134E5E 0%, #71B280 100%)' },
+      { name: 'noir', label: 'Dark Noir', gradient: 'linear-gradient(135deg, #000000 0%, #434343 100%)' },
+      { name: 'candy', label: 'Candy Pink', gradient: 'linear-gradient(135deg, #D38312 0%, #A83279 100%)' }
+    ];
+
+    function loadSettings() {
+      const saved = localStorage.getItem('desktop-settings');
+      if (saved) {
+        settings = { ...settings, ...JSON.parse(saved) };
+      }
+      applySettings();
+    }
+
+    function saveSettings() {
+      settings.enableSnapping = document.getElementById('enableSnapping').checked;
+      settings.savePositions = document.getElementById('savePositions').checked;
+      settings.animateWindows = document.getElementById('animateWindows').checked;
+      settings.showWelcome = document.getElementById('showWelcome').checked;
+      localStorage.setItem('desktop-settings', JSON.stringify(settings));
+      applySettings();
+    }
+
+    function applySettings() {
+      document.body.style.background = themes.find(t => t.name === settings.theme)?.gradient || themes[0].gradient;
+      document.getElementById('enableSnapping').checked = settings.enableSnapping;
+      document.getElementById('savePositions').checked = settings.savePositions;
+      document.getElementById('animateWindows').checked = settings.animateWindows;
+      document.getElementById('showWelcome').checked = settings.showWelcome;
+      renderThemeGrid();
+    }
+
+    function renderThemeGrid() {
+      const grid = document.getElementById('themeGrid');
+      grid.innerHTML = themes.map(theme => `
+        <div class="theme-option ${settings.theme === theme.name ? 'active' : ''}"
+             onclick="selectTheme('${theme.name}')"
+             style="background: ${theme.gradient};">
+          ${theme.label}
+        </div>
+      `).join('');
+    }
+
+    function selectTheme(themeName) {
+      settings.theme = themeName;
+      localStorage.setItem('desktop-settings', JSON.stringify(settings));
+      applySettings();
+    }
+
+    function openSettings() {
+      document.getElementById('settingsPanel').style.display = 'block';
+      renderThemeGrid();
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsPanel').style.display = 'none';
+    }
+
+    function toggleHelp() {
+      const helpOverlay = document.getElementById('helpOverlay');
+      helpOverlay.style.display = helpOverlay.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function showNotification(title, message, icon = '💬', duration = 3000) {
+      const container = document.getElementById('notificationContainer');
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.innerHTML = `
+        <div class="notification-icon">${icon}</div>
+        <div class="notification-content">
+          <div class="notification-title">${title}</div>
+          <div class="notification-message">${message}</div>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+      `;
+      container.appendChild(notification);
+
+      if (duration > 0) {
+        setTimeout(() => notification.remove(), duration);
+      }
+    }
+
+    function showLoading(message = 'Loading...') {
+      const overlay = document.getElementById('loadingOverlay');
+      const text = document.getElementById('loadingText');
+      text.textContent = message;
+      overlay.classList.add('active');
+    }
+
+    function hideLoading() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.remove('active');
+    }
+
+    function getSnapZone(x, y) {
+      if (!settings.enableSnapping) return null;
+
+      const snapThreshold = 20;
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight - 50;
+
+      if (x < snapThreshold && y < snapThreshold) return 'top-left';
+      if (x > screenWidth - snapThreshold && y < snapThreshold) return 'top-right';
+      if (x < snapThreshold && y > screenHeight - snapThreshold) return 'bottom-left';
+      if (x > screenWidth - snapThreshold && y > screenHeight - snapThreshold) return 'bottom-right';
+      if (x < snapThreshold) return 'left';
+      if (x > screenWidth - snapThreshold) return 'right';
+      if (y < snapThreshold) return 'top';
+
+      return null;
+    }
+
+    function showSnapPreview(zone) {
+      const preview = document.getElementById('snapPreview');
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight - 50;
+
+      if (!zone) {
+        preview.style.display = 'none';
+        return;
+      }
+
+      preview.style.display = 'block';
+
+      const positions = {
+        'left': { left: '0', top: '0', width: '50%', height: `${screenHeight}px` },
+        'right': { left: '50%', top: '0', width: '50%', height: `${screenHeight}px` },
+        'top': { left: '0', top: '0', width: '100%', height: `${screenHeight}px` },
+        'top-left': { left: '0', top: '0', width: '50%', height: `${screenHeight / 2}px` },
+        'top-right': { left: '50%', top: '0', width: '50%', height: `${screenHeight / 2}px` },
+        'bottom-left': { left: '0', top: `${screenHeight / 2}px`, width: '50%', height: `${screenHeight / 2}px` },
+        'bottom-right': { left: '50%', top: `${screenHeight / 2}px`, width: '50%', height: `${screenHeight / 2}px` }
+      };
+
+      const pos = positions[zone];
+      if (pos) {
+        Object.assign(preview.style, pos);
+      }
+    }
+
+    function applySnap(appId, zone) {
+      if (!zone || !windows[appId]) return;
+
+      const win = windows[appId];
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight - 50;
+
+      const positions = {
+        'left': { left: '0', top: '0', width: `${screenWidth / 2}px`, height: `${screenHeight}px` },
+        'right': { left: `${screenWidth / 2}px`, top: '0', width: `${screenWidth / 2}px`, height: `${screenHeight}px` },
+        'top': { left: '0', top: '0', width: `${screenWidth}px`, height: `${screenHeight}px` },
+        'top-left': { left: '0', top: '0', width: `${screenWidth / 2}px`, height: `${screenHeight / 2}px` },
+        'top-right': { left: `${screenWidth / 2}px`, top: '0', width: `${screenWidth / 2}px`, height: `${screenHeight / 2}px` },
+        'bottom-left': { left: '0', top: `${screenHeight / 2}px`, width: `${screenWidth / 2}px`, height: `${screenHeight / 2}px` },
+        'bottom-right': { left: `${screenWidth / 2}px`, top: `${screenHeight / 2}px`, width: `${screenWidth / 2}px`, height: `${screenHeight / 2}px` }
+      };
+
+      const pos = positions[zone];
+      if (pos) {
+        Object.assign(win.style, pos);
+        win.dataset.snapped = zone;
+        saveWindowState(appId);
+        showNotification('Window Snapped', `Snapped to ${zone.replace('-', ' ')}`, '📍', 2000);
+      }
+    }
+
+    function saveWindowState(appId) {
+      if (!settings.savePositions || !windows[appId]) return;
+
+      const win = windows[appId];
+      const state = {
+        width: win.style.width,
+        height: win.style.height,
+        left: win.style.left,
+        top: win.style.top,
+        maximized: win.dataset.maximized === 'true',
+        snapped: win.dataset.snapped || null
+      };
+
+      localStorage.setItem(`window-state-${appId}`, JSON.stringify(state));
+    }
+
+    function restoreWindowState(appId) {
+      if (!settings.savePositions) return false;
+
+      const saved = localStorage.getItem(`window-state-${appId}`);
+      if (!saved) return false;
+
+      const state = JSON.parse(saved);
+      const win = windows[appId];
+
+      win.style.width = state.width;
+      win.style.height = state.height;
+      win.style.left = state.left;
+      win.style.top = state.top;
+
+      if (state.maximized) {
+        win.dataset.maximized = 'true';
+      }
+      if (state.snapped) {
+        win.dataset.snapped = state.snapped;
+      }
+
+      return true;
+    }
+
+    function showContextMenu(event, appId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      contextMenuTarget = appId;
+      const menu = document.getElementById('contextMenu');
+      menu.style.display = 'block';
+      menu.style.left = `${event.clientX}px`;
+      menu.style.top = `${event.clientY}px`;
+    }
+
+    function hideContextMenu() {
+      document.getElementById('contextMenu').style.display = 'none';
+      contextMenuTarget = null;
+    }
+
+    function contextMenuAction(action) {
+      if (!contextMenuTarget) return;
+
+      switch (action) {
+        case 'minimize':
+          minimizeWindow(contextMenuTarget);
+          break;
+        case 'maximize':
+          maximizeWindow(contextMenuTarget);
+          break;
+        case 'alwaysOnTop':
+          toggleAlwaysOnTop(contextMenuTarget);
+          break;
+        case 'close':
+          closeWindow(contextMenuTarget);
+          break;
+      }
+
+      hideContextMenu();
+    }
+
+    function toggleAlwaysOnTop(appId) {
+      if (!windows[appId]) return;
+
+      const win = windows[appId];
+      const isOnTop = win.dataset.alwaysOnTop === 'true';
+
+      if (isOnTop) {
+        win.dataset.alwaysOnTop = 'false';
+        win.style.zIndex = zIndexCounter++;
+        showNotification('Always on Top', 'Disabled for this window', '📌', 2000);
+      } else {
+        win.dataset.alwaysOnTop = 'true';
+        win.style.zIndex = 99999;
+        showNotification('Always on Top', 'Enabled for this window', '📌', 2000);
+      }
+    }
 
     async function loadApps() {
+      showLoading('Loading applications...');
       try {
         const response = await fetch('/api/apps');
         apps = await response.json();
@@ -230,6 +1017,8 @@
             Failed to load applications. Please check the server.
           </div>
         `;
+      } finally {
+        hideLoading();
       }
     }
 
@@ -254,6 +1043,8 @@
         return;
       }
 
+      showLoading(`Launching ${app.name}...`);
+
       const window = document.createElement('div');
       window.className = 'window active';
       window.id = `window-${appId}`;
@@ -264,7 +1055,7 @@
       window.style.zIndex = ++zIndexCounter;
 
       window.innerHTML = `
-        <div class="window-header" onmousedown="startDrag(event, '${appId}')">
+        <div class="window-header" onmousedown="startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
             <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
@@ -274,11 +1065,22 @@
         </div>
         <div class="window-content">
           <iframe src="/apps/${appId}/${app.entry}"></iframe>
+          <div class="window-resize-handle resize-handle-e" onmousedown="startResize(event, '${appId}', 'e')"></div>
+          <div class="window-resize-handle resize-handle-s" onmousedown="startResize(event, '${appId}', 's')"></div>
+          <div class="window-resize-handle resize-handle-se" onmousedown="startResize(event, '${appId}', 'se')"></div>
+          <div class="window-resize-handle resize-handle-n" onmousedown="startResize(event, '${appId}', 'n')"></div>
+          <div class="window-resize-handle resize-handle-w" onmousedown="startResize(event, '${appId}', 'w')"></div>
+          <div class="window-resize-handle resize-handle-nw" onmousedown="startResize(event, '${appId}', 'nw')"></div>
+          <div class="window-resize-handle resize-handle-ne" onmousedown="startResize(event, '${appId}', 'ne')"></div>
+          <div class="window-resize-handle resize-handle-sw" onmousedown="startResize(event, '${appId}', 'sw')"></div>
         </div>
       `;
 
       document.getElementById('desktop').appendChild(window);
       windows[appId] = window;
+
+      if (!restoreWindowState(appId)) {
+      }
 
       const taskbarBtn = document.createElement('button');
       taskbarBtn.className = 'taskbar-btn active';
@@ -298,6 +1100,8 @@
 
       focusWindow(appId);
       document.getElementById('welcomeScreen').style.display = 'none';
+
+      setTimeout(() => hideLoading(), 500);
     }
 
     function focusWindow(appId) {
@@ -375,17 +1179,82 @@
       event.preventDefault();
     }
 
+    function startResize(event, appId, direction) {
+      if (windows[appId].dataset.maximized === 'true') return;
+
+      resizeState = {
+        appId,
+        direction,
+        startX: event.clientX,
+        startY: event.clientY,
+        startWidth: parseInt(windows[appId].style.width),
+        startHeight: parseInt(windows[appId].style.height),
+        startLeft: parseInt(windows[appId].style.left),
+        startTop: parseInt(windows[appId].style.top)
+      };
+
+      focusWindow(appId);
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     document.addEventListener('mousemove', (event) => {
       if (dragState) {
         const dx = event.clientX - dragState.startX;
         const dy = event.clientY - dragState.startY;
         windows[dragState.appId].style.left = `${dragState.startLeft + dx}px`;
         windows[dragState.appId].style.top = `${dragState.startTop + dy}px`;
+
+        snapZone = getSnapZone(event.clientX, event.clientY);
+        showSnapPreview(snapZone);
+      }
+
+      if (resizeState) {
+        const dx = event.clientX - resizeState.startX;
+        const dy = event.clientY - resizeState.startY;
+        const win = windows[resizeState.appId];
+        const dir = resizeState.direction;
+
+        const minWidth = 300;
+        const minHeight = 200;
+
+        if (dir === 'e' || dir === 'se' || dir === 'ne') {
+          const newWidth = Math.max(minWidth, resizeState.startWidth + dx);
+          win.style.width = `${newWidth}px`;
+        }
+        if (dir === 's' || dir === 'se' || dir === 'sw') {
+          const newHeight = Math.max(minHeight, resizeState.startHeight + dy);
+          win.style.height = `${newHeight}px`;
+        }
+        if (dir === 'w' || dir === 'nw' || dir === 'sw') {
+          const newWidth = Math.max(minWidth, resizeState.startWidth - dx);
+          const newLeft = resizeState.startLeft + (resizeState.startWidth - newWidth);
+          win.style.width = `${newWidth}px`;
+          win.style.left = `${newLeft}px`;
+        }
+        if (dir === 'n' || dir === 'nw' || dir === 'ne') {
+          const newHeight = Math.max(minHeight, resizeState.startHeight - dy);
+          const newTop = resizeState.startTop + (resizeState.startHeight - newHeight);
+          win.style.height = `${newHeight}px`;
+          win.style.top = `${newTop}px`;
+        }
       }
     });
 
     document.addEventListener('mouseup', () => {
+      if (dragState && snapZone) {
+        applySnap(dragState.appId, snapZone);
+        snapZone = null;
+        showSnapPreview(null);
+      }
+
+      if (dragState || resizeState) {
+        const appId = dragState?.appId || resizeState?.appId;
+        if (appId) saveWindowState(appId);
+      }
+
       dragState = null;
+      resizeState = null;
     });
 
     document.getElementById('desktop').addEventListener('click', () => {
@@ -394,6 +1263,71 @@
       activeWindow = null;
     });
 
+    function cycleWindows() {
+      const windowIds = Object.keys(windows).filter(id => !windows[id].classList.contains('minimized'));
+      if (windowIds.length === 0) return;
+
+      const currentIndex = windowIds.indexOf(activeWindow);
+      const nextIndex = (currentIndex + 1) % windowIds.length;
+      focusWindow(windowIds[nextIndex]);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        cycleWindows();
+      }
+
+      if (e.ctrlKey && e.key === 'w') {
+        e.preventDefault();
+        if (activeWindow) closeWindow(activeWindow);
+      }
+
+      if (e.ctrlKey && e.key === ',') {
+        e.preventDefault();
+        openSettings();
+      }
+
+      if (e.key === 'F1') {
+        e.preventDefault();
+        toggleHelp();
+      }
+
+      if (e.key === 'Escape') {
+        const welcome = document.getElementById('welcomeScreen');
+        const helpOverlay = document.getElementById('helpOverlay');
+        const settingsPanel = document.getElementById('settingsPanel');
+
+        if (helpOverlay.style.display === 'flex') {
+          helpOverlay.style.display = 'none';
+        } else if (settingsPanel.style.display === 'block') {
+          settingsPanel.style.display = 'none';
+        } else if (welcome.style.display !== 'none') {
+          welcome.style.display = 'none';
+        }
+      }
+
+      if (activeWindow && (e.metaKey || e.key === 'Meta')) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          applySnap(activeWindow, 'left');
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          applySnap(activeWindow, 'right');
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          maximizeWindow(activeWindow);
+        }
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.context-menu')) {
+        hideContextMenu();
+      }
+    });
+
+    loadSettings();
     loadApps();
   </script>
 </body>
