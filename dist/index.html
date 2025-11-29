@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sequential Desktop</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 10px;
+      z-index: 9999;
+    }
+
+    .taskbar-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+
+    .taskbar-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .taskbar-btn.active {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .welcome-screen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 900px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .welcome-screen h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .welcome-screen p {
+      text-align: center;
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .app-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .app-card:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-5px);
+    }
+
+    .app-card h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .app-card p {
+      font-size: 14px;
+      opacity: 0.8;
+      text-align: left;
+    }
+
+    .window {
+      position: fixed;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      z-index: 100;
+    }
+
+    .window.active {
+      display: flex;
+    }
+
+    .window.minimized {
+      display: none;
+    }
+
+    .window-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 12px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: move;
+      user-select: none;
+    }
+
+    .window-title {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-control-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+    }
+
+    .window-control-btn.minimize {
+      background: #ffc107;
+    }
+
+    .window-control-btn.maximize {
+      background: #4caf50;
+    }
+
+    .window-control-btn.close {
+      background: #f44336;
+    }
+
+    .window-content {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .window-content iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .desktop-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 50px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="desktop-overlay" id="desktop"></div>
+
+  <div class="welcome-screen" id="welcomeScreen">
+    <h1>🚀 Sequential Desktop</h1>
+    <p>Full-stack development environment with collaborative tools</p>
+    <div class="app-grid" id="appGrid">
+      <div style="text-align: center; grid-column: 1/-1; padding: 40px;">
+        Loading applications...
+      </div>
+    </div>
+  </div>
+
+  <div class="taskbar">
+    <button class="taskbar-btn" onclick="toggleWelcome()">🏠 Home</button>
+    <div id="taskbarApps"></div>
+  </div>
+
+  <script>
+    let apps = [];
+    let windows = {};
+    let activeWindow = null;
+    let dragState = null;
+    let zIndexCounter = 100;
+
+    async function loadApps() {
+      try {
+        const response = await fetch('/api/apps');
+        apps = await response.json();
+        renderAppGrid();
+      } catch (error) {
+        console.error('Failed to load apps:', error);
+        document.getElementById('appGrid').innerHTML = `
+          <div style="text-align: center; grid-column: 1/-1; padding: 40px; color: #ff6b6b;">
+            Failed to load applications. Please check the server.
+          </div>
+        `;
+      }
+    }
+
+    function renderAppGrid() {
+      const grid = document.getElementById('appGrid');
+      grid.innerHTML = apps.map(app => `
+        <div class="app-card" onclick="launchApp('${app.id}')">
+          <h3>${app.icon} ${app.name}</h3>
+          <p>${app.description}</p>
+        </div>
+      `).join('');
+    }
+
+    function launchApp(appId) {
+      const app = apps.find(a => a.id === appId);
+      if (!app) return;
+
+      if (windows[appId]) {
+        windows[appId].classList.remove('minimized');
+        focusWindow(appId);
+        document.getElementById('welcomeScreen').style.display = 'none';
+        return;
+      }
+
+      const window = document.createElement('div');
+      window.className = 'window active';
+      window.id = `window-${appId}`;
+      window.style.width = `${app.window.defaultWidth}px`;
+      window.style.height = `${app.window.defaultHeight}px`;
+      window.style.left = `${50 + Object.keys(windows).length * 30}px`;
+      window.style.top = `${50 + Object.keys(windows).length * 30}px`;
+      window.style.zIndex = ++zIndexCounter;
+
+      window.innerHTML = `
+        <div class="window-header" onmousedown="startDrag(event, '${appId}')">
+          <span class="window-title">${app.icon} ${app.name}</span>
+          <div class="window-controls">
+            <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
+            ${app.window.maximizable ? `<button class="window-control-btn maximize" onclick="maximizeWindow('${appId}')"></button>` : ''}
+            <button class="window-control-btn close" onclick="closeWindow('${appId}')"></button>
+          </div>
+        </div>
+        <div class="window-content">
+          <iframe src="/apps/${appId}/${app.entry}"></iframe>
+        </div>
+      `;
+
+      document.getElementById('desktop').appendChild(window);
+      windows[appId] = window;
+
+      const taskbarBtn = document.createElement('button');
+      taskbarBtn.className = 'taskbar-btn active';
+      taskbarBtn.id = `taskbar-${appId}`;
+      taskbarBtn.textContent = `${app.icon} ${app.name}`;
+      taskbarBtn.onclick = () => {
+        if (windows[appId].classList.contains('minimized')) {
+          windows[appId].classList.remove('minimized');
+          focusWindow(appId);
+        } else if (activeWindow === appId) {
+          minimizeWindow(appId);
+        } else {
+          focusWindow(appId);
+        }
+      };
+      document.getElementById('taskbarApps').appendChild(taskbarBtn);
+
+      focusWindow(appId);
+      document.getElementById('welcomeScreen').style.display = 'none';
+    }
+
+    function focusWindow(appId) {
+      Object.values(windows).forEach(w => w.classList.remove('active'));
+      document.querySelectorAll('.taskbar-btn').forEach(b => {
+        if (b.id !== 'taskbar-' + appId) b.classList.remove('active');
+      });
+
+      if (windows[appId]) {
+        windows[appId].classList.add('active');
+        windows[appId].style.zIndex = ++zIndexCounter;
+        document.getElementById(`taskbar-${appId}`)?.classList.add('active');
+        activeWindow = appId;
+      }
+    }
+
+    function minimizeWindow(appId) {
+      if (windows[appId]) {
+        windows[appId].classList.add('minimized');
+        windows[appId].classList.remove('active');
+        document.getElementById(`taskbar-${appId}`)?.classList.remove('active');
+        if (activeWindow === appId) activeWindow = null;
+      }
+    }
+
+    function maximizeWindow(appId) {
+      if (windows[appId]) {
+        const win = windows[appId];
+        if (win.dataset.maximized === 'true') {
+          win.style.width = win.dataset.origWidth;
+          win.style.height = win.dataset.origHeight;
+          win.style.left = win.dataset.origLeft;
+          win.style.top = win.dataset.origTop;
+          win.dataset.maximized = 'false';
+        } else {
+          win.dataset.origWidth = win.style.width;
+          win.dataset.origHeight = win.style.height;
+          win.dataset.origLeft = win.style.left;
+          win.dataset.origTop = win.style.top;
+          win.style.width = '100%';
+          win.style.height = 'calc(100vh - 50px)';
+          win.style.left = '0';
+          win.style.top = '0';
+          win.dataset.maximized = 'true';
+        }
+      }
+    }
+
+    function closeWindow(appId) {
+      if (windows[appId]) {
+        windows[appId].remove();
+        delete windows[appId];
+        document.getElementById(`taskbar-${appId}`)?.remove();
+        if (activeWindow === appId) activeWindow = null;
+      }
+    }
+
+    function toggleWelcome() {
+      const welcome = document.getElementById('welcomeScreen');
+      welcome.style.display = welcome.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function startDrag(event, appId) {
+      if (windows[appId].dataset.maximized === 'true') return;
+
+      dragState = {
+        appId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeft: parseInt(windows[appId].style.left),
+        startTop: parseInt(windows[appId].style.top)
+      };
+
+      focusWindow(appId);
+      event.preventDefault();
+    }
+
+    document.addEventListener('mousemove', (event) => {
+      if (dragState) {
+        const dx = event.clientX - dragState.startX;
+        const dy = event.clientY - dragState.startY;
+        windows[dragState.appId].style.left = `${dragState.startLeft + dx}px`;
+        windows[dragState.appId].style.top = `${dragState.startTop + dy}px`;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      dragState = null;
+    });
+
+    document.getElementById('desktop').addEventListener('click', () => {
+      Object.values(windows).forEach(w => w.classList.remove('active'));
+      document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+      activeWindow = null;
+    });
+
+    loadApps();
+  </script>
+</body>
+</html>

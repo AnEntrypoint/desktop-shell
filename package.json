@@ -1,0 +1,10 @@
+{
+  "name": "@sequential/desktop-shell",
+  "version": "1.0.0",
+  "description": "Desktop shell for Sequential Desktop with window manager and dynamic app loading",
+  "main": "dist/index.html",
+  "type": "module",
+  "keywords": ["sequential", "desktop", "shell", "window-manager"],
+  "author": "Sequential Ecosystem",
+  "license": "MIT"
+}
