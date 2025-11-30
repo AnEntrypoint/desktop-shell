@@ -615,8 +615,24 @@
   <div class="taskbar">
     <button class="taskbar-btn" onclick="toggleWelcome()">🏠 Home</button>
     <div id="taskbarApps"></div>
-    <button class="taskbar-btn" onclick="openSettings()" style="margin-left: auto;">⚙️ Settings</button>
+    <button class="taskbar-btn" onclick="toggleDesktopChat()" style="margin-left: auto;">🤖 AI</button>
+    <button class="taskbar-btn" onclick="openSettings()">⚙️ Settings</button>
     <button class="taskbar-btn" onclick="toggleHelp()">❓ Help</button>
+  </div>
+
+  <div id="desktopChat" style="display: none; position: fixed; right: 20px; bottom: 60px; width: 400px; height: 600px; background: #1e1e1e; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); z-index: 10000; flex-direction: column;">
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; color: white; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-weight: 500;">🤖 Desktop AI</span>
+      <button onclick="toggleDesktopChat()" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 4px 8px; border-radius: 4px;">✕</button>
+    </div>
+    <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 15px; color: #d4d4d4;"></div>
+    <div style="padding: 15px; border-top: 1px solid #444;">
+      <div id="chatScope" style="background: rgba(102,126,234,0.1); padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 12px; color: #d4d4d4;"></div>
+      <div style="display: flex; gap: 10px;">
+        <input id="chatInput" placeholder="Ask about windows..." style="flex: 1; background: #2d2d30; border: 1px solid #444; color: #d4d4d4; padding: 10px; border-radius: 6px; font-size: 14px;" />
+        <button onclick="sendDesktopChatMessage()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500;">Send</button>
+      </div>
+    </div>
   </div>
 
   <div class="snap-preview" id="snapPreview"></div>
@@ -746,6 +762,12 @@
     let zIndexCounter = 100;
     let contextMenuTarget = null;
     let snapZone = null;
+    let windowScopes = {};
+    let desktopScope = {
+      windows: {},
+      activeApp: null,
+      timestamp: Date.now()
+    };
     let settings = {
       theme: 'default',
       enableSnapping: true,
@@ -1105,6 +1127,16 @@
       document.getElementById('desktop').appendChild(windowEl);
       windows[appId] = windowEl;
 
+      windowScopes[appId] = {
+        appId,
+        appName: app.name,
+        capabilities: app.capabilities || [],
+        timestamp: Date.now(),
+        metadata: {}
+      };
+
+      updateDesktopScope();
+
       if (!restoreWindowState(appId)) {
       }
 
@@ -1180,9 +1212,21 @@
       if (windows[appId]) {
         windows[appId].remove();
         delete windows[appId];
+        delete windowScopes[appId];
         document.getElementById(`taskbar-${appId}`)?.remove();
         if (activeWindow === appId) activeWindow = null;
+        updateDesktopScope();
       }
+    }
+
+    function updateDesktopScope() {
+      desktopScope.windows = Object.keys(windowScopes).reduce((acc, id) => {
+        acc[id] = windowScopes[id];
+        return acc;
+      }, {});
+      desktopScope.activeApp = activeWindow;
+      desktopScope.timestamp = Date.now();
+      window.desktopScope = desktopScope;
     }
 
     window.toggleWelcome = function() {
@@ -1353,6 +1397,90 @@
       if (!e.target.closest('.context-menu')) {
         hideContextMenu();
       }
+    });
+
+    function toggleDesktopChat() {
+      const chat = document.getElementById('desktopChat');
+      if (chat.style.display === 'none') {
+        chat.style.display = 'flex';
+        updateChatScope();
+      } else {
+        chat.style.display = 'none';
+      }
+    }
+
+    function updateChatScope() {
+      const scope = document.getElementById('chatScope');
+      const windowCount = Object.keys(windowScopes).length;
+      const appNames = Object.values(windowScopes).map(s => s.appName).join(', ');
+      scope.innerHTML = `<strong>Desktop Scope:</strong> ${windowCount} windows open${appNames ? ': ' + appNames : ''}`;
+    }
+
+    async function sendDesktopChatMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      addChatMessage('user', text);
+
+      try {
+        const response = await fetch('/api/llm/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: text,
+            context: {
+              desktop: desktopScope,
+              windows: windowScopes,
+              activeWindow
+            }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          addChatMessage('assistant', data.content || 'Response received');
+        } else {
+          addChatMessage('assistant', 'LLM endpoint not configured. This is a demo UI.');
+        }
+      } catch (e) {
+        addChatMessage('assistant', `Demo mode: You asked about ${Object.keys(windowScopes).length} open windows`);
+      }
+    }
+
+    function addChatMessage(role, content) {
+      const messages = document.getElementById('chatMessages');
+      const div = document.createElement('div');
+      div.style.marginBottom = '12px';
+      div.style.textAlign = role === 'user' ? 'right' : 'left';
+
+      const bubble = document.createElement('div');
+      bubble.style.display = 'inline-block';
+      bubble.style.maxWidth = '80%';
+      bubble.style.padding = '10px 14px';
+      bubble.style.borderRadius = '12px';
+      bubble.style.fontSize = '14px';
+
+      if (role === 'user') {
+        bubble.style.background = '#667eea';
+        bubble.style.color = 'white';
+      } else {
+        bubble.style.background = '#2d2d30';
+        bubble.style.borderLeft = '3px solid #667eea';
+      }
+
+      bubble.textContent = content;
+      div.appendChild(bubble);
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    window.toggleDesktopChat = toggleDesktopChat;
+    window.sendDesktopChatMessage = sendDesktopChatMessage;
+
+    document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendDesktopChatMessage();
     });
 
     loadSettings();
