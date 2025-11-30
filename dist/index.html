@@ -166,6 +166,7 @@
       border-radius: 50%;
       border: none;
       cursor: pointer;
+      pointer-events: auto !important;
     }
 
     .window-control-btn.minimize {
@@ -1103,7 +1104,7 @@
       windowEl.onclick = () => window.focusWindow(appId);
 
       windowEl.innerHTML = `
-        <div class="window-header" onmousedown="startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
+        <div class="window-header" onmousedown="event.target.closest('button') || startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
             <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
