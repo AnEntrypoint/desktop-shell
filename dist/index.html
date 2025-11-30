@@ -1104,7 +1104,7 @@
       windowEl.onclick = () => window.focusWindow(appId);
 
       windowEl.innerHTML = `
-        <div class="window-header" onmousedown="event.target.closest('button') || startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
+        <div class="window-header" onmousedown="handleHeaderMouseDown(event, '${appId}')" ondblclick="handleHeaderDoubleClick('${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
             <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
@@ -1235,6 +1235,15 @@
       welcome.style.display = welcome.style.display === 'none' ? 'block' : 'none';
     }
 
+    window.handleHeaderMouseDown = function(event, appId) {
+      // Don't drag if clicking on a button
+      if (event.target.closest('button')) {
+        return;
+      }
+
+      window.startDrag(event, appId);
+    }
+
     window.startDrag = function(event, appId) {
       if (windows[appId].dataset.maximized === 'true') return;
 
@@ -1247,7 +1256,18 @@
       };
 
       window.focusWindow(appId);
-      event.preventDefault();
+    }
+
+    window.handleHeaderDoubleClick = function(appId) {
+      const win = windows[appId];
+      if (!win) return;
+
+      // Toggle maximize on double-click
+      if (win.dataset.maximized === 'true') {
+        window.maximizeWindow(appId);
+      } else if (win.dataset.maximized !== 'true') {
+        window.maximizeWindow(appId);
+      }
     }
 
     window.startResize = function(event, appId, direction) {
