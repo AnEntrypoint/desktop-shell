@@ -148,6 +148,7 @@
       align-items: center;
       cursor: move;
       user-select: none;
+      pointer-events: auto;
     }
 
     .window-title {
@@ -1104,7 +1105,7 @@
       windowEl.onclick = () => window.focusWindow(appId);
 
       windowEl.innerHTML = `
-        <div class="window-header" onmousedown="handleHeaderMouseDown(event, '${appId}')" ondblclick="handleHeaderDoubleClick('${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
+        <div class="window-header" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
             <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
@@ -1127,6 +1128,14 @@
 
       document.getElementById('desktop').appendChild(windowEl);
       windows[appId] = windowEl;
+
+      const header = windowEl.querySelector('.window-header');
+      header.onmousedown = (event) => {
+        if (event.target.closest('button')) return;
+        event.preventDefault();
+        window.startDrag(event, appId);
+      };
+      header.ondblclick = () => window.handleHeaderDoubleClick(appId);
 
       windowScopes[appId] = {
         appId,
@@ -1288,6 +1297,35 @@
       event.preventDefault();
       event.stopPropagation();
     }
+
+    document.addEventListener('mousedown', (event) => {
+      const header = event.target.closest('.window-header');
+      if (!header) return;
+
+      const windowEl = header.closest('.window');
+      if (!windowEl) return;
+
+      const appId = Object.keys(windows).find(id => windows[id] === windowEl);
+      if (!appId) return;
+
+      if (event.target.closest('button')) return;
+
+      event.preventDefault();
+      startDrag(event, appId);
+    });
+
+    document.addEventListener('dblclick', (event) => {
+      const header = event.target.closest('.window-header');
+      if (!header) return;
+
+      const windowEl = header.closest('.window');
+      if (!windowEl) return;
+
+      const appId = Object.keys(windows).find(id => windows[id] === windowEl);
+      if (!appId) return;
+
+      handleHeaderDoubleClick(appId);
+    });
 
     document.addEventListener('mousemove', (event) => {
       if (dragState) {
