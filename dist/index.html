@@ -958,7 +958,7 @@
       return true;
     }
 
-    function showContextMenu(event, appId) {
+    window.showContextMenu = function(event, appId) {
       event.preventDefault();
       event.stopPropagation();
 
@@ -969,33 +969,33 @@
       menu.style.top = `${event.clientY}px`;
     }
 
-    function hideContextMenu() {
+    window.hideContextMenu = function() {
       document.getElementById('contextMenu').style.display = 'none';
       contextMenuTarget = null;
     }
 
-    function contextMenuAction(action) {
+    window.contextMenuAction = function(action) {
       if (!contextMenuTarget) return;
 
       switch (action) {
         case 'minimize':
-          minimizeWindow(contextMenuTarget);
+          window.minimizeWindow(contextMenuTarget);
           break;
         case 'maximize':
-          maximizeWindow(contextMenuTarget);
+          window.maximizeWindow(contextMenuTarget);
           break;
         case 'alwaysOnTop':
-          toggleAlwaysOnTop(contextMenuTarget);
+          window.toggleAlwaysOnTop(contextMenuTarget);
           break;
         case 'close':
-          closeWindow(contextMenuTarget);
+          window.closeWindow(contextMenuTarget);
           break;
       }
 
-      hideContextMenu();
+      window.hideContextMenu();
     }
 
-    function toggleAlwaysOnTop(appId) {
+    window.toggleAlwaysOnTop = function(appId) {
       if (!windows[appId]) return;
 
       const win = windows[appId];
@@ -1046,7 +1046,7 @@
 
       if (windows[appId]) {
         windows[appId].classList.remove('minimized');
-        focusWindow(appId);
+        window.focusWindow(appId);
         document.getElementById('welcomeScreen').style.display = 'none';
         return;
       }
@@ -1061,7 +1061,7 @@
       window.style.left = `${50 + Object.keys(windows).length * 30}px`;
       window.style.top = `${50 + Object.keys(windows).length * 30}px`;
       window.style.zIndex = ++zIndexCounter;
-      window.onclick = () => focusWindow(appId);
+      window.onclick = () => window.focusWindow(appId);
 
       window.innerHTML = `
         <div class="window-header" onmousedown="startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
@@ -1098,22 +1098,22 @@
       taskbarBtn.onclick = () => {
         if (windows[appId].classList.contains('minimized')) {
           windows[appId].classList.remove('minimized');
-          focusWindow(appId);
+          window.focusWindow(appId);
         } else if (activeWindow === appId) {
-          minimizeWindow(appId);
+          window.minimizeWindow(appId);
         } else {
-          focusWindow(appId);
+          window.focusWindow(appId);
         }
       };
       document.getElementById('taskbarApps').appendChild(taskbarBtn);
 
-      focusWindow(appId);
+      window.focusWindow(appId);
       document.getElementById('welcomeScreen').style.display = 'none';
 
       setTimeout(() => hideLoading(), 500);
     }
 
-    function focusWindow(appId) {
+    window.focusWindow = function(appId) {
       Object.values(windows).forEach(w => w.classList.remove('active'));
       document.querySelectorAll('.taskbar-btn').forEach(b => {
         if (b.id !== 'taskbar-' + appId) b.classList.remove('active');
@@ -1127,7 +1127,7 @@
       }
     }
 
-    function minimizeWindow(appId) {
+    window.minimizeWindow = function(appId) {
       if (windows[appId]) {
         windows[appId].classList.add('minimized');
         windows[appId].classList.remove('active');
@@ -1136,7 +1136,7 @@
       }
     }
 
-    function maximizeWindow(appId) {
+    window.maximizeWindow = function(appId) {
       if (windows[appId]) {
         const win = windows[appId];
         if (win.dataset.maximized === 'true') {
@@ -1159,7 +1159,7 @@
       }
     }
 
-    function closeWindow(appId) {
+    window.closeWindow = function(appId) {
       if (windows[appId]) {
         windows[appId].remove();
         delete windows[appId];
@@ -1168,12 +1168,12 @@
       }
     }
 
-    function toggleWelcome() {
+    window.toggleWelcome = function() {
       const welcome = document.getElementById('welcomeScreen');
       welcome.style.display = welcome.style.display === 'none' ? 'block' : 'none';
     }
 
-    function startDrag(event, appId) {
+    window.startDrag = function(event, appId) {
       if (windows[appId].dataset.maximized === 'true') return;
 
       dragState = {
@@ -1184,11 +1184,11 @@
         startTop: parseInt(windows[appId].style.top)
       };
 
-      focusWindow(appId);
+      window.focusWindow(appId);
       event.preventDefault();
     }
 
-    function startResize(event, appId, direction) {
+    window.startResize = function(event, appId, direction) {
       if (windows[appId].dataset.maximized === 'true') return;
 
       resizeState = {
@@ -1202,7 +1202,7 @@
         startTop: parseInt(windows[appId].style.top)
       };
 
-      focusWindow(appId);
+      window.focusWindow(appId);
       event.preventDefault();
       event.stopPropagation();
     }
@@ -1280,7 +1280,7 @@
 
       const currentIndex = windowIds.indexOf(activeWindow);
       const nextIndex = (currentIndex + 1) % windowIds.length;
-      focusWindow(windowIds[nextIndex]);
+      window.focusWindow(windowIds[nextIndex]);
     }
 
     document.addEventListener('keydown', (e) => {
@@ -1291,7 +1291,7 @@
 
       if (e.ctrlKey && e.key === 'w') {
         e.preventDefault();
-        if (activeWindow) closeWindow(activeWindow);
+        if (activeWindow) window.closeWindow(activeWindow);
       }
 
       if (e.ctrlKey && e.key === ',') {
@@ -1327,7 +1327,7 @@
           applySnap(activeWindow, 'right');
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          maximizeWindow(activeWindow);
+          window.maximizeWindow(activeWindow);
         }
       }
     });
