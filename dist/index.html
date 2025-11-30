@@ -758,6 +758,18 @@
       { name: 'candy', label: 'Candy Pink', gradient: 'linear-gradient(135deg, #D38312 0%, #A83279 100%)' }
     ];
 
+    window.focusWindow = null;
+    window.minimizeWindow = null;
+    window.maximizeWindow = null;
+    window.closeWindow = null;
+    window.toggleWelcome = null;
+    window.startDrag = null;
+    window.startResize = null;
+    window.showContextMenu = null;
+    window.hideContextMenu = null;
+    window.contextMenuAction = null;
+    window.toggleAlwaysOnTop = null;
+
     function loadSettings() {
       const saved = localStorage.getItem('desktop-settings');
       if (saved) {
@@ -1053,17 +1065,17 @@
 
       showLoading(`Launching ${app.name}...`);
 
-      const window = document.createElement('div');
-      window.className = 'window active';
-      window.id = `window-${appId}`;
-      window.style.width = `${app.window.defaultWidth}px`;
-      window.style.height = `${app.window.defaultHeight}px`;
-      window.style.left = `${50 + Object.keys(windows).length * 30}px`;
-      window.style.top = `${50 + Object.keys(windows).length * 30}px`;
-      window.style.zIndex = ++zIndexCounter;
-      window.onclick = () => window.focusWindow(appId);
+      const windowEl = document.createElement('div');
+      windowEl.className = 'window active';
+      windowEl.id = `window-${appId}`;
+      windowEl.style.width = `${app.window.defaultWidth}px`;
+      windowEl.style.height = `${app.window.defaultHeight}px`;
+      windowEl.style.left = `${50 + Object.keys(windows).length * 30}px`;
+      windowEl.style.top = `${50 + Object.keys(windows).length * 30}px`;
+      windowEl.style.zIndex = ++zIndexCounter;
+      windowEl.onclick = () => window.focusWindow(appId);
 
-      window.innerHTML = `
+      windowEl.innerHTML = `
         <div class="window-header" onmousedown="startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
@@ -1085,8 +1097,8 @@
         </div>
       `;
 
-      document.getElementById('desktop').appendChild(window);
-      windows[appId] = window;
+      document.getElementById('desktop').appendChild(windowEl);
+      windows[appId] = windowEl;
 
       if (!restoreWindowState(appId)) {
       }
