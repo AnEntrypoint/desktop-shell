@@ -118,13 +118,21 @@
       border-radius: 12px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       overflow: hidden;
-      display: none;
+      display: flex;
       flex-direction: column;
       z-index: 100;
     }
 
     .window.active {
-      display: flex;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    }
+
+    .window.active .window-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .window:not(.active) .window-header {
+      background: linear-gradient(135deg, #888 0%, #666 100%);
     }
 
     .window.minimized {
@@ -1053,6 +1061,7 @@
       window.style.left = `${50 + Object.keys(windows).length * 30}px`;
       window.style.top = `${50 + Object.keys(windows).length * 30}px`;
       window.style.zIndex = ++zIndexCounter;
+      window.onclick = () => focusWindow(appId);
 
       window.innerHTML = `
         <div class="window-header" onmousedown="startDrag(event, '${appId}')" oncontextmenu="showContextMenu(event, '${appId}')">
@@ -1257,10 +1266,12 @@
       resizeState = null;
     });
 
-    document.getElementById('desktop').addEventListener('click', () => {
-      Object.values(windows).forEach(w => w.classList.remove('active'));
-      document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
-      activeWindow = null;
+    document.getElementById('desktop').addEventListener('click', (e) => {
+      if (e.target.id === 'desktop') {
+        Object.values(windows).forEach(w => w.classList.remove('active'));
+        document.querySelectorAll('.taskbar-btn').forEach(b => b.classList.remove('active'));
+        activeWindow = null;
+      }
     });
 
     function cycleWindows() {
