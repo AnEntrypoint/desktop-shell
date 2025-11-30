@@ -766,6 +766,8 @@
     let contextMenuTarget = null;
     let snapZone = null;
     let windowScopes = {};
+    let lastDoubleClickTime = 0;
+    let lastDoubleClickApp = null;
     let desktopScope = {
       windows: {},
       activeApp: null,
@@ -1136,7 +1138,7 @@
         event.preventDefault();
         window.startDrag(event, appId);
       };
-      header.ondblclick = () => window.handleHeaderDoubleClick(appId);
+      header.addEventListener('dblclick', () => window.handleHeaderDoubleClick(appId));
 
       windowScopes[appId] = {
         appId,
@@ -1269,15 +1271,14 @@
     }
 
     window.handleHeaderDoubleClick = function(appId) {
+      const now = Date.now();
+      if (now - lastDoubleClickTime < 200 && lastDoubleClickApp === appId) return;
+      lastDoubleClickTime = now;
+      lastDoubleClickApp = appId;
+
       const win = windows[appId];
       if (!win) return;
-
-      // Toggle maximize on double-click
-      if (win.dataset.maximized === 'true') {
-        window.maximizeWindow(appId);
-      } else if (win.dataset.maximized !== 'true') {
-        window.maximizeWindow(appId);
-      }
+      window.maximizeWindow(appId);
     }
 
     window.startResize = function(event, appId, direction) {
