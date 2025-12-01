@@ -182,6 +182,93 @@
       background: #f44336;
     }
 
+    .window-control-btn.chat {
+      background: #2196f3;
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .window-chat-panel {
+      position: absolute;
+      right: 10px;
+      top: 50px;
+      width: 350px;
+      height: 400px;
+      background: rgba(30, 30, 30, 0.98);
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .window-chat-panel.active {
+      display: flex;
+    }
+
+    .window-chat-header {
+      background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+      padding: 10px 12px;
+      color: white;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .window-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      color: #d4d4d4;
+      font-size: 13px;
+    }
+
+    .window-chat-input-area {
+      padding: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .window-chat-context {
+      background: rgba(33, 150, 243, 0.1);
+      padding: 6px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: #90caf9;
+    }
+
+    .window-chat-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-chat-input {
+      flex: 1;
+      background: #2d2d30;
+      border: 1px solid #444;
+      color: #d4d4d4;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .window-chat-send {
+      background: #2196f3;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
     .window-content {
       flex: 1;
       overflow: hidden;
@@ -1111,13 +1198,28 @@
         <div class="window-header" oncontextmenu="showContextMenu(event, '${appId}')">
           <span class="window-title">${app.icon} ${app.name}</span>
           <div class="window-controls">
+            <button class="window-control-btn chat" onclick="toggleWindowChat('${appId}')" title="Window AI Chat">💬</button>
             <button class="window-control-btn minimize" onclick="minimizeWindow('${appId}')"></button>
             ${app.window.maximizable ? `<button class="window-control-btn maximize" onclick="maximizeWindow('${appId}')"></button>` : ''}
             <button class="window-control-btn close" onclick="closeWindow('${appId}')"></button>
           </div>
         </div>
         <div class="window-content">
-          <iframe src="/apps/${appId}/${app.entry}"></iframe>
+          <iframe src="/apps/${appId}/${app.entry}" id="iframe-${appId}"></iframe>
+          <div class="window-chat-panel" id="chat-panel-${appId}">
+            <div class="window-chat-header">
+              <span>💬 ${app.name} AI</span>
+              <button onclick="toggleWindowChat('${appId}')" style="background: rgba(255,255,255,0.2); border: none; color: white; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 12px;">✕</button>
+            </div>
+            <div class="window-chat-messages" id="chat-messages-${appId}"></div>
+            <div class="window-chat-input-area">
+              <div class="window-chat-context" id="chat-context-${appId}">Context: ${app.name}</div>
+              <div class="window-chat-input-row">
+                <input class="window-chat-input" id="chat-input-${appId}" placeholder="Ask about this window..." onkeypress="if(event.key==='Enter')sendWindowChat('${appId}')" />
+                <button class="window-chat-send" onclick="sendWindowChat('${appId}')">Send</button>
+              </div>
+            </div>
+          </div>
           <div class="window-resize-handle resize-handle-e" onmousedown="startResize(event, '${appId}', 'e')"></div>
           <div class="window-resize-handle resize-handle-s" onmousedown="startResize(event, '${appId}', 's')"></div>
           <div class="window-resize-handle resize-handle-se" onmousedown="startResize(event, '${appId}', 'se')"></div>
@@ -1543,6 +1645,177 @@
     document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendDesktopChatMessage();
     });
+
+    let windowChatMessages = {};
+
+    window.toggleWindowChat = function(appId) {
+      const panel = document.getElementById(`chat-panel-${appId}`);
+      if (!panel) return;
+
+      const isActive = panel.classList.contains('active');
+      document.querySelectorAll('.window-chat-panel').forEach(p => p.classList.remove('active'));
+
+      if (!isActive) {
+        panel.classList.add('active');
+        updateWindowChatContext(appId);
+        document.getElementById(`chat-input-${appId}`)?.focus();
+      }
+    }
+
+    function updateWindowChatContext(appId) {
+      const contextEl = document.getElementById(`chat-context-${appId}`);
+      if (!contextEl) return;
+
+      const scope = windowScopes[appId];
+      const app = apps.find(a => a.id === appId);
+      if (!scope || !app) return;
+
+      let contextInfo = `<strong>${app.icon} ${app.name}</strong>`;
+      if (scope.capabilities && scope.capabilities.length > 0) {
+        contextInfo += ` | Tools: ${scope.capabilities.join(', ')}`;
+      }
+
+      const iframe = document.getElementById(`iframe-${appId}`);
+      if (iframe) {
+        try {
+          const iframeWindow = iframe.contentWindow;
+          if (iframeWindow && typeof iframeWindow.getWindowContext === 'function') {
+            const appContext = iframeWindow.getWindowContext();
+            if (appContext) {
+              scope.metadata = appContext;
+              contextInfo += ` | ${JSON.stringify(appContext).slice(0, 50)}...`;
+            }
+          }
+        } catch (e) {}
+      }
+
+      contextEl.innerHTML = contextInfo;
+    }
+
+    function getWindowContext(appId) {
+      const scope = windowScopes[appId] || {};
+      const app = apps.find(a => a.id === appId);
+      const win = windows[appId];
+
+      const context = {
+        appId,
+        appName: app?.name || appId,
+        appDescription: app?.description || '',
+        capabilities: app?.capabilities || [],
+        windowState: {
+          maximized: win?.dataset.maximized === 'true',
+          snapped: win?.dataset.snapped || null,
+          alwaysOnTop: win?.dataset.alwaysOnTop === 'true'
+        },
+        metadata: scope.metadata || {}
+      };
+
+      const iframe = document.getElementById(`iframe-${appId}`);
+      if (iframe) {
+        try {
+          const iframeWindow = iframe.contentWindow;
+          if (iframeWindow) {
+            if (typeof iframeWindow.getWindowContext === 'function') {
+              context.appState = iframeWindow.getWindowContext();
+            }
+            if (typeof iframeWindow.getAvailableTools === 'function') {
+              context.tools = iframeWindow.getAvailableTools();
+            }
+          }
+        } catch (e) {}
+      }
+
+      return context;
+    }
+
+    window.sendWindowChat = async function(appId) {
+      const input = document.getElementById(`chat-input-${appId}`);
+      const messagesEl = document.getElementById(`chat-messages-${appId}`);
+      if (!input || !messagesEl) return;
+
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+      addWindowChatMessage(appId, 'user', text);
+
+      const windowContext = getWindowContext(appId);
+
+      try {
+        const response = await fetch('/api/llm/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: text,
+            context: {
+              type: 'window',
+              window: windowContext,
+              desktop: desktopScope
+            }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          addWindowChatMessage(appId, 'assistant', data.content || 'Response received');
+          if (data.action) {
+            executeWindowAction(appId, data.action);
+          }
+        } else {
+          addWindowChatMessage(appId, 'assistant', `I can help with ${windowContext.appName}. Capabilities: ${windowContext.capabilities.join(', ') || 'general'}`);
+        }
+      } catch (e) {
+        addWindowChatMessage(appId, 'assistant', `Window context ready: ${windowContext.appName}. Try asking about specific features.`);
+      }
+    }
+
+    function addWindowChatMessage(appId, role, content) {
+      const messagesEl = document.getElementById(`chat-messages-${appId}`);
+      if (!messagesEl) return;
+
+      if (!windowChatMessages[appId]) windowChatMessages[appId] = [];
+      windowChatMessages[appId].push({ role, content, timestamp: Date.now() });
+
+      const div = document.createElement('div');
+      div.style.marginBottom = '10px';
+      div.style.textAlign = role === 'user' ? 'right' : 'left';
+
+      const bubble = document.createElement('div');
+      bubble.style.display = 'inline-block';
+      bubble.style.maxWidth = '85%';
+      bubble.style.padding = '8px 12px';
+      bubble.style.borderRadius = '10px';
+      bubble.style.fontSize = '13px';
+      bubble.style.lineHeight = '1.4';
+
+      if (role === 'user') {
+        bubble.style.background = '#2196f3';
+        bubble.style.color = 'white';
+      } else {
+        bubble.style.background = '#2d2d30';
+        bubble.style.borderLeft = '3px solid #2196f3';
+      }
+
+      bubble.textContent = content;
+      div.appendChild(bubble);
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function executeWindowAction(appId, action) {
+      const iframe = document.getElementById(`iframe-${appId}`);
+      if (!iframe) return;
+
+      try {
+        const iframeWindow = iframe.contentWindow;
+        if (iframeWindow && typeof iframeWindow.executeAction === 'function') {
+          iframeWindow.executeAction(action);
+          showNotification('Action Executed', `${action.type}: ${action.description || 'completed'}`, '✅', 2000);
+        }
+      } catch (e) {
+        console.error('Failed to execute window action:', e);
+      }
+    }
 
     loadSettings();
     loadApps();
